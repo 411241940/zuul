@@ -150,13 +150,13 @@ public class FilterProcessor {
             Debug.addRoutingDebug("Invoking {" + sType + "} type filters");
         }
         boolean bResult = false;
-        List<ZuulFilter> list = FilterLoader.getInstance().getFiltersByType(sType);
+        List<ZuulFilter> list = FilterLoader.getInstance().getFiltersByType(sType); // 获取该类型过滤器列表
         if (list != null) {
             for (int i = 0; i < list.size(); i++) {
                 ZuulFilter zuulFilter = list.get(i);
                 Object result = processZuulFilter(zuulFilter);
                 if (result != null && result instanceof Boolean) {
-                    bResult |= ((Boolean) result);
+                    bResult |= ((Boolean) result); // 或，一个 true 则为 true
                 }
             }
         }
@@ -192,7 +192,7 @@ public class FilterProcessor {
             
             ZuulFilterResult result = filter.runFilter();
             ExecutionStatus s = result.getStatus();
-            execTime = System.currentTimeMillis() - ltime;
+            execTime = System.currentTimeMillis() - ltime; // 耗时
 
             switch (s) {
                 case FAILED:

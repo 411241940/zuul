@@ -39,9 +39,11 @@ public class StartServer implements ServletContextListener {
         MonitoringHelper.initMocks();
 
         // initializes groovy filesystem poller
+        // 定时更新新的 groovy filter
         initGroovyFilterManager();
 
         // initializes a few java filter examples
+        // 初始化 java filter
         initJavaFilters();
     }
 
@@ -51,13 +53,13 @@ public class StartServer implements ServletContextListener {
     }
 
     private void initGroovyFilterManager() {
-        FilterLoader.getInstance().setCompiler(new GroovyCompiler());
+        FilterLoader.getInstance().setCompiler(new GroovyCompiler()); // 设置 FilterLoader 的编译器为 GroovyCompiler
 
-        String scriptRoot = System.getProperty("zuul.filter.root", "");
+        String scriptRoot = System.getProperty("zuul.filter.root", ""); // 从系统变量中获取要轮询 filter 的根目录
         if (scriptRoot.length() > 0) scriptRoot = scriptRoot + File.separator;
         try {
-            FilterFileManager.setFilenameFilter(new GroovyFileFilter());
-            FilterFileManager.init(5, scriptRoot + "pre", scriptRoot + "route", scriptRoot + "post");
+            FilterFileManager.setFilenameFilter(new GroovyFileFilter()); // 过滤非 .groovy 结尾文件
+            FilterFileManager.init(5, scriptRoot + "pre", scriptRoot + "route", scriptRoot + "post"); // 初始化加载 filter。 定时更新新的 groovy filter
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

@@ -79,7 +79,7 @@ public class FilterFileManager {
         INSTANCE.aDirectories = directories;
         INSTANCE.pollingIntervalSeconds = pollingIntervalSeconds;
         INSTANCE.manageFiles();
-        INSTANCE.startPoller();
+        INSTANCE.startPoller(); // 开启轮询
 
     }
 

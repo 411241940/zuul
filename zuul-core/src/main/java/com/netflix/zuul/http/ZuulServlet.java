@@ -63,10 +63,12 @@ public class ZuulServlet extends HttpServlet {
     @Override
     public void service(javax.servlet.ServletRequest servletRequest, javax.servlet.ServletResponse servletResponse) throws ServletException, IOException {
         try {
+            // 把 request 和 response 放到 ThreadLocal 中
             init((HttpServletRequest) servletRequest, (HttpServletResponse) servletResponse);
 
             // Marks this request as having passed through the "Zuul engine", as opposed to servlets
             // explicitly bound in web.xml, for which requests will not have the same data attached
+            // 获取 threadLocal 中的 context
             RequestContext context = RequestContext.getCurrentContext();
             context.setZuulEngineRan();
 

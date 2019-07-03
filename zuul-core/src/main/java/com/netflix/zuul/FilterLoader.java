@@ -54,11 +54,12 @@ public class FilterLoader {
 
     private static final Logger LOG = LoggerFactory.getLogger(FilterLoader.class);
 
-    private final ConcurrentHashMap<String, Long> filterClassLastModified = new ConcurrentHashMap<String, Long>();
+    private final ConcurrentHashMap<String, Long> filterClassLastModified = new ConcurrentHashMap<String, Long>(); // 文件名 -> 最近修改时间
     private final ConcurrentHashMap<String, String> filterClassCode = new ConcurrentHashMap<String, String>();
     private final ConcurrentHashMap<String, String> filterCheck = new ConcurrentHashMap<String, String>();
-    private final ConcurrentHashMap<String, List<ZuulFilter>> hashFiltersByType = new ConcurrentHashMap<String, List<ZuulFilter>>();
+    private final ConcurrentHashMap<String, List<ZuulFilter>> hashFiltersByType = new ConcurrentHashMap<String, List<ZuulFilter>>(); // 过滤器类型 -> 过滤器列表
 
+    // 所有 filter 的缓存
     private FilterRegistry filterRegistry = FilterRegistry.instance();
 
     static DynamicCodeCompiler COMPILER;
@@ -145,21 +146,21 @@ public class FilterLoader {
      */
     public boolean putFilter(File file) throws Exception {
         String sName = file.getAbsolutePath() + file.getName();
-        if (filterClassLastModified.get(sName) != null && (file.lastModified() != filterClassLastModified.get(sName))) {
+        if (filterClassLastModified.get(sName) != null && (file.lastModified() != filterClassLastModified.get(sName))) { // 最近修改过该文件，重新加载
             LOG.debug("reloading filter " + sName);
             filterRegistry.remove(sName);
         }
         ZuulFilter filter = filterRegistry.get(sName);
         if (filter == null) {
             Class clazz = COMPILER.compile(file);
-            if (!Modifier.isAbstract(clazz.getModifiers())) {
+            if (!Modifier.isAbstract(clazz.getModifiers())) { // 非抽象类
                 filter = (ZuulFilter) FILTER_FACTORY.newInstance(clazz);
                 List<ZuulFilter> list = hashFiltersByType.get(filter.filterType());
                 if (list != null) {
-                    hashFiltersByType.remove(filter.filterType()); //rebuild this list
+                    hashFiltersByType.remove(filter.filterType()); //rebuild this list 清除过滤器类型缓存，重新加载该类型
                 }
-                filterRegistry.put(file.getAbsolutePath() + file.getName(), filter);
-                filterClassLastModified.put(sName, file.lastModified());
+                filterRegistry.put(file.getAbsolutePath() + file.getName(), filter); // 添加到 filter 缓存中
+                filterClassLastModified.put(sName, file.lastModified()); // 设置文件最近修改时间
                 return true;
             }
         }
@@ -169,17 +170,20 @@ public class FilterLoader {
 
     /**
      * Returns a list of filters by the filterType specified
+     * 根据过滤器类型获取过滤器列表
      *
      * @param filterType
      * @return a List<ZuulFilter>
      */
     public List<ZuulFilter> getFiltersByType(String filterType) {
 
+        // 先从过滤器类型缓存获取 过滤器列表
         List<ZuulFilter> list = hashFiltersByType.get(filterType);
         if (list != null) return list;
 
         list = new ArrayList<ZuulFilter>();
 
+        // 匹配所有过滤器类型
         Collection<ZuulFilter> filters = filterRegistry.getAllFilters();
         for (Iterator<ZuulFilter> iterator = filters.iterator(); iterator.hasNext(); ) {
             ZuulFilter filter = iterator.next();
